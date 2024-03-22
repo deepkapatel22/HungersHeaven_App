@@ -36,7 +36,7 @@ const App = () => {
               <Route path="/afterlogin" element={<AfterLogin />}/>
               <Route path="/header2" element={<Header2/>}/>
               <Route path="/showrecipe/:recipeId" element={<ShowRecipe/>} />
-              <Route path="/userprofile" element={<UserProfile/>}/>
+              <Route path="/userprofile/:userId" element={<UserProfile/>}/>
               <Route path="/fullrecipes" elemement={<FullRecipes/>}/>
             </Routes>
         </BrowserRouter>

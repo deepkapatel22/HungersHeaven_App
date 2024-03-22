@@ -1,14 +1,14 @@
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { useState} from "react";
-import { useContext } from "react";
-import UserContext from "../contexts/UserContext";
 import { useNavigate } from 'react-router-dom';
+import { useUser } from "../contexts/UserContext";
 
-const Header2 = () => {
+const Header2 = ({userId}) => {
     const navigate = useNavigate();
+    // const { user } = useContext(UserContext); // Access user data from context
+    // const userId = user?.userId ; // Access userId from user data
     const [isOpen, setIsOpen] = useState(false);
-    const { user } = useContext(UserContext);
     const toggleDropdown = () => setIsOpen(!isOpen);
     const handleLogout = () => {
     
@@ -41,7 +41,7 @@ const Header2 = () => {
                     </DropdownButton>
                 {isOpen && (
                     <DropdownContent>
-                        <DropdownItem><Link to='/userprofile'>Profile</Link></DropdownItem>
+                        <DropdownItem><Link to={`/userprofile/${userId}`}>Profile</Link></DropdownItem>
                         <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
                     </DropdownContent>
                 )}

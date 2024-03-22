@@ -5,50 +5,45 @@ import validation from "./LoginValidation";
 import { Link } from "react-router-dom";
 import  axios  from "axios";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from '../contexts/UserContext';
-import { useContext } from "react";
+import { useUser } from "../contexts/UserContext";
+
 
 const Login = ({closeLogInModel}) => {
-  const { setUser } = useContext(UserContext);
-  const navigate = useNavigate(); 
+  const { loginUser } = useUser(); // Use loginUser function from the context
+  const navigate = useNavigate();
   const [values, setValues] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
-
-  const handleInput = (event) => {
-    setValues(prev => ({ ...prev, [event.target.name]: event.target.value }));
-  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
-  // const handleSubmit = (event) => {
-  //   event.preventDefault();
-  //   setErrors(validation(values));
-  // }; 
+  const handleInput = (event) => {
+    setValues((prev) => ({ ...prev, [event.target.name]: event.target.value }));
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const validationErrors = validation(values);
     setErrors(validationErrors);
 
       setIsSubmitting(true);
-      axios.post('http://localhost:3000/api/user/login', {
-        email: values.email,
-        password: values.password, 
-      })
-      .then(response => {
-        alert("Login successful! Please check your email to verify your account");
-        setUser(response.data);
-        navigate('/afterlogin');
-        console.log(response.data);
-        console.log(message);
-      })
-      .catch(error => {
-        console.error("Signup error:", error.response ? error.response.data : "No response from server");
-        setMessage(error.response ? error.response.data.message : "Error during signup");
-      })
-      .finally(() => setIsSubmitting(false));
+      axios
+        .post("http://localhost:3000/api/user/login", {
+          email: values.email,
+          password: values.password,
+        })
+        .then((response) => {
+          alert("Login successful! Please check your email to verify your account");
+          loginUser(response.data); // Use loginUser to update context
+          navigate("/afterlogin");
+        })
+        .catch((error) => {
+          console.error("Login error:", error.response ? error.response.data : "No response from server");
+          setMessage(error.response ? error.response.data.message : "Error during login");
+        })
+        .finally(() => setIsSubmitting(false));
   };
   return (
     <>

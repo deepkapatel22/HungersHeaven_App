@@ -1,26 +1,74 @@
 import React from 'react'
 import Header2 from './Header2';
-import { useState, useEffect } from 'react';
 import styled from "styled-components";
 import { Link } from 'react-router-dom';
 import { CiImageOn } from "react-icons/ci";
-const UserProfile = () => {
+import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useUser } from '../contexts/UserContext';
+import axios from 'axios';
 
+const UserProfile = () => {
+  const { userId } = useParams(); // This retrieves the userId from the URL
+  const [users, setUsers] = useState(null);
+  const { user, fetchUser, loading, error } = useUser(); // Destructure to get fetchUser, loading, and error from context
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        console.log(users);
+        const response = await axios.get(`http://localhost:3000/api/user/${userId}`);
+        setUsers(response.data);
+        console.log(users);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        // Handle error appropriately
+      }
+    };
+
+    if (userId) {
+      fetchUserData();
+    }
+  }, [userId]);
+
+  if (!user) {
+    return <div>Loading user data...</div>;
+  }
+
+  // useEffect(() => {
+  //   // Ensure userId is not undefined or null
+  //   if (!userId) {
+  //     console.log("UserId is null or undefined, not fetching user data.");
+  //     return;
+  //   }
+    
+  //   // Construct the URL dynamically based on the userId
+  //   const fetchUserData = async (userId) => {
+  //     try {
+  //       const response = await axios.get(`http://localhost:3000/api/user/profile/${userId}`);
+  //       console.log(response);
+  //       console.log(response.data);
+  //       setUserData(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching user data:', error);
+  //     }
+  //   };
+
+  //   fetchUserData();
+  // }, [userId]); // Dependency array to re-run the effect if userId changes
+
+  // if (!userData) {
+  //   return <div>Loading user data...</div>;
+  // }
+  
   return (
     <>
     <Header2/>
     <SideBar>
-    <div className="sidebar">
-      <div className="image-upload-container">
-        <img src="" alt=""/>
-        <CiImageOn />
-        <input id="fileInput" type="file" style={{display: 'none'}} accept="image/*" />
-      </div>
-      <h3>Name</h3>
-      <p>Email</p>
-      <p>PhoneNumber</p>
-      <Link to="/edit-profile">Edit Profile</Link>
-      <Link to="/my-recipes">My Recipes</Link>
+    <div className="sidebar"> 
+      <h3>Name: {users.fname} {users.lname}</h3>
+      <p>Email: {users.email}</p>
+      <p>Phone: {users.phno}</p>
     </div>
     </SideBar>
   </>

@@ -3,6 +3,64 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
+
+// Styling for the interaction bar containing like, comment, and share buttons
+const InteractionBar = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 20px; // Adjust the space between buttons
+  padding: 10px 0;
+  margin-top: 20px;
+`;
+
+// Reusable button style for like, comment, and share
+const InteractionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  color: #333;
+  font-weight: bold;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #007bff; // Highlight color on hover
+  }
+
+  svg {
+    margin-right: 8px; // Space between icon and text
+  }
+`;
+
+// Styling for the comment input and submission area
+const CommentForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+`;
+
+const CommentInput = styled.input`
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+`;
+
+const SubmitButton = styled.button`
+  align-self: flex-end;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
 const ShowRecipeCSS = styled.div`
 
   max-width: 900px;
@@ -56,6 +114,21 @@ export const Paragraph = styled.p`
 const ShowRecipe = () => {
   const [recipe, setRecipe] = useState(null);
   const { recipeId } = useParams();
+  const [showComments, setShowComments] = useState(false);
+
+  // Placeholder functions for handling interactions
+  const handleLike = () => {
+    console.log('Like functionality to be implemented');
+  };
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    console.log('Comment submit functionality to be implemented');
+  };
+
+  const handleShare = () => {
+    console.log('Share functionality to be implemented');
+  };
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -102,6 +175,25 @@ const ShowRecipe = () => {
             <Image src={recipe.images} alt={`Recipe Image`} />
         {/* ))}*/}
         </div>
+        <InteractionBar>
+        <InteractionButton onClick={handleLike}>
+          👍 Like
+        </InteractionButton>
+        <InteractionButton onClick={() => setShowComments(!showComments)}>
+          💬 Comment
+        </InteractionButton>
+        <InteractionButton onClick={handleShare}>
+          🔗 Share
+        </InteractionButton>
+      </InteractionBar>
+
+      {showComments && (
+        <CommentForm onSubmit={handleCommentSubmit}>
+          <CommentInput type="text" placeholder="Add a comment..." />
+          <SubmitButton type="submit">Post</SubmitButton>
+        </CommentForm>
+        // Plus, render existing comments here
+      )}
     </ShowRecipeCSS>
   );
 };

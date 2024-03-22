@@ -62,7 +62,8 @@ router.post('/login', async (req, res) => {
   
       console.log("Login successful for:", email); // Debug log
       // Proceed with token creation or session management here
-      res.status(200).json({ message: "Login successful" });
+      
+      return res.status(200).json({ message: "Login successful",data: JSON.parse(JSON.stringify(user)) });
     } catch (error) {
       console.error("Login error:", error); // Debug log
       res.status(500).json({ error: error.message });
@@ -81,25 +82,53 @@ router.post('/login', async (req, res) => {
 //       res.status(500).send(error.toString());
 //     }
 //   });
+// router.get('/profile/:userId', async (req, res) => {
+//   const id = req.params.userId;
+//   try {
+//     console.log("Hello");
+//     console.log("id: "+id);
+//     const user = await User.findOne({ userId: id });
+//     console.log(user);
+//     res.json(user);
+//   } catch (error) {
+//     res.status(500).send('Server error');
+//   }
+// });
+// router.get('/profile/:userId', async (req, res) => {
+//   try {
+//     const userId = req.params.userId;
+//     const user = await User.findOne({userId: userId});
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+//     // Optionally, exclude the password from the result
+//     // const { password, ...userDetails } = user.toObject();
+//     res.status(200).json(user);
+//     console.log(user);
+//   } catch (error) {
+//     console.error('Error fetching user:', error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// });
+
+router.get('/:userId', async (req, res) => {
+  const { userId } = req.params;
+  console.log(`Fetching user with ID: ${userId}`);
   
-router.get('/profile', async (req, res) => {
   try {
-      if (!req.users || !req.users.userId) {
-          return res.status(401).send('Unauthorized');
-      }
+    const user = await User.findOne({userId: userId});
+    console.log('Query result:', user);
 
-      const userId = req.users.userId;
-      const user = await User.findOne({ userId: userId }).exec();
-
-      if (!user) {
-          return res.status(404).send('User not found');
-      }
-
-      res.json(user);
+    if (!user) {
+      console.log(`User with ID ${userId} not found.`);
+      return res.status(404).send('User not found');
+    }
+    
+    res.json(user);
   } catch (error) {
-      res.status(500).send(error.toString());
+    console.error(`Error fetching user with ID ${userId}:`, error);
+    res.status(500).send('Error fetching recipe');
   }
 });
-
 
 module.exports = router;

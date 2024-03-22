@@ -10,6 +10,7 @@ router.post('/', async (req, res) => {
   console.log('POST request to /api/recipes received');
   try {
     const recipe = new Recipe({
+      userId : req.body.userId,
       recipeName : req.body.recipeName,
       persons : req.body.persons,
       ingredients : req.body.ingredients,
@@ -76,6 +77,15 @@ router.get('/:recipeId', async (req, res) => {
   } catch (error) {
     console.error(`Error fetching recipe with ID ${recipeId}:`, error);
     res.status(500).send('Error fetching recipe');
+  }
+});
+
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const recipes = await Recipe.find({ userId: req.params.userId });
+    res.json(recipes);
+  } catch (error) {
+    res.status(500).send('Server error');
   }
 });
 

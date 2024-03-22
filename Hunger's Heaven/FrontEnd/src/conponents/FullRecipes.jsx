@@ -4,7 +4,7 @@ import React from 'react'
 
 const FullRecipes = () => {
   return (
-    Hello
+    HI
   )
 }
 
