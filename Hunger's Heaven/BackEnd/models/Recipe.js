@@ -17,10 +17,10 @@ const ingredientSchema = new Schema({
 
 
 const recipeSchema = new mongoose.Schema({
-  // userId: { 
-  //   type: String, 
-  //   ref: 'User', 
-  //   required: true 
+  // userId: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'User',
+  //   required: true
   // },
   recipeId: {
     type: String,
@@ -64,6 +64,10 @@ const recipeSchema = new mongoose.Schema({
     enum: ['italian', 'mexican', 'indian', 'chinese', 'japanese', 'french']
   },
   images: {
+    type: String,
+    required: true
+  },
+  created: {
     type: String,
     required: true
   }

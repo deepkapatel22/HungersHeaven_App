@@ -19,29 +19,12 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// // Login route
-// router.post('/login', async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ message: "Invalid credentials" });
-//     }
-//     // Handle session/token creation here
-//     res.status(200).json({ message: "Login successful" });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 router.post('/login', async (req, res) => {
     try {
       const { email, password } = req.body;
-      console.log("Attempting login for:", email); // Debug log
-      console.log(req.body);
+      // console.log("Req.body: ", req.body)
+      console.log("Attempting login for:", req.body.email); 
+      // console.log(req.body);
   
       const user = await User.findOne({ email: req.body.email.toLowerCase() });
       if (!user) {
@@ -61,72 +44,62 @@ router.post('/login', async (req, res) => {
       }
   
       console.log("Login successful for:", email); // Debug log
-      // Proceed with token creation or session management here
-      
-      return res.status(200).json({ message: "Login successful",data: JSON.parse(JSON.stringify(user)) });
+      console.log("User id:", user.userId)
+
+
+      const userResponse = { ...user._doc };
+
+      return res.status(200).json({
+        message: "Login successful",
+        user: userResponse
+      });
     } catch (error) {
-      console.error("Login error:", error); // Debug log
+      // console.error("Login error:", error); // Debug log
       res.status(500).json({ error: error.message });
     }
   });
 
-// router.get('/profile', async (req, res) => {
-//     try {
-//       const userId = req.query.userId; // Ensure you have a way to identify the user, e.g., through authentication tokens
-//       const user = await User.findById(userId).exec(); // Use exec() for better error handling with async/await
-//       if (!user) {
-//         return res.status(404).send('User not found');
-//       }
-//       res.json(user);
-//     } catch (error) {
-//       res.status(500).send(error.toString());
-//     }
-//   });
-// router.get('/profile/:userId', async (req, res) => {
-//   const id = req.params.userId;
+
+
+
+// router.get('/:userId', async (req, res) => {
+//   console.log(req.params);
+ 
+  
 //   try {
-//     console.log("Hello");
-//     console.log("id: "+id);
-//     const user = await User.findOne({ userId: id });
-//     console.log(user);
+//     const user = await User.findOne({userId: req.params.userId});
+//     console.log(`Fetching user with ID: ${user}`);
+//     console.log('Query result:', user);
+
+//     if (!user) {
+//       console.log(`User with ID ${user} not found.`);
+//       return res.status(404).send('User not found');
+//     }
+    
 //     res.json(user);
 //   } catch (error) {
-//     res.status(500).send('Server error');
-//   }
-// });
-// router.get('/profile/:userId', async (req, res) => {
-//   try {
-//     const userId = req.params.userId;
-//     const user = await User.findOne({userId: userId});
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-//     // Optionally, exclude the password from the result
-//     // const { password, ...userDetails } = user.toObject();
-//     res.status(200).json(user);
-//     console.log(user);
-//   } catch (error) {
-//     console.error('Error fetching user:', error);
-//     res.status(500).json({ message: 'Server error' });
+//     console.error(`Error fetching user with ID ${User}:`, error);
+//     res.status(500).send('Error fetching recipe');
 //   }
 // });
 
-router.get('/:userId', async (req, res) => {
-  const { userId } = req.params;
-  console.log(`Fetching user with ID: ${userId}`);
+router.get('/:email', async (req, res) => {
+  console.log(req.params);
+ 
   
   try {
-    const user = await User.findOne({userId: userId});
-    console.log('Query result:', user);
+    const users = await User.findOne({email: req.params.email});
+    console.log(`Fetching user with ID: ${users}`);
+    console.log('Query result:', users);
 
-    if (!user) {
-      console.log(`User with ID ${userId} not found.`);
+    if (!users) {
+      console.log(`User with ID ${users} not found.`);
       return res.status(404).send('User not found');
     }
     
-    res.json(user);
+    res.json(users);
   } catch (error) {
-    console.error(`Error fetching user with ID ${userId}:`, error);
+    console.error(`Error fetching user with ID :`, error);
     res.status(500).send('Error fetching recipe');
   }
 });

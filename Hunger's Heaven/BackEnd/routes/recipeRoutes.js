@@ -1,16 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const Recipe = require('../models/Recipe'); // Adjust the path as per your structure
-
+const User = require('../models/User');
 const mongoose = require('mongoose');
 
 
-// POST: Add a new recipe
 router.post('/', async (req, res) => {
   console.log('POST request to /api/recipes received');
   try {
     const recipe = new Recipe({
-      userId : req.body.userId,
+      // userId: req.body.userId,
       recipeName : req.body.recipeName,
       persons : req.body.persons,
       ingredients : req.body.ingredients,
@@ -20,6 +19,7 @@ router.post('/', async (req, res) => {
       type: req.body.type,
       cuisine: req.body.cuisine,
       images: req.body.images,
+      created: req.body.created,
     });
     console.log(recipe);
     await recipe.save();
@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
 });
 
 
-// GET: Fetch all recipes
+
 router.get('/', async (req, res) => {
   try {
     const recipes = await Recipe.find({});
@@ -45,20 +45,6 @@ router.get('/', async (req, res) => {
     res.status(500).send(error);
   }
 }); 
-
-// router.get('/:recipeId', async (req, res) => {
-//   try {
-//     const recipe = await Recipe.find({ recipeId: "req.params.recipeId" });
-//     console.log("Checking param id", req.params.recipeId);
-//     console.log(recipe);
-//     if (!recipe) {
-//       return res.status(404).send('Recipe not found');
-//     }
-//     res.json(recipe);
-//   } catch (error) {
-//     res.status(500).send(error.toString());
-//   }
-// });
 
 router.get('/:recipeId', async (req, res) => {
   const { recipeId } = req.params;
@@ -80,19 +66,21 @@ router.get('/:recipeId', async (req, res) => {
   }
 });
 
-router.get('/user/:userId', async (req, res) => {
+router.get('/userrecipe/:created', async (req, res) => {
   try {
-    const recipes = await Recipe.find({ userId: req.params.userId });
-    res.json(recipes);
+    const useremail = await Recipe.findOne({ created: req.params.created });
+    console.log(useremail);
+    if (!useremail) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json([useremail]);
   } catch (error) {
-    res.status(500).send('Server error');
+    res.status(500).json({ message: 'Server error', error });
   }
 });
 
 
 
-
-
-// Additional CRUD operations (update, delete) can be similarly defined
 
 module.exports = router;

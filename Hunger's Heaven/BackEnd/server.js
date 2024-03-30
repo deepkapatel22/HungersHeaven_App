@@ -4,12 +4,13 @@ const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const User = require('./models/User'); 
 const authRoutes = require('./routes/authRoutes');
 const recipeRoutes = require('./routes/recipeRoutes');
 const multer = require("multer");
 const app = express();
 const path = require('path');
+
+
 
 const port = process.env.PORT || 3000;
 
@@ -106,4 +107,9 @@ app.post('/upload', upload.single('images'), (req, res) => {
     res.status(500).send(error.message);
   }
 });
+
+
+
+
+
 app.listen(port, () => console.log(`Server running on port ${port}`));
