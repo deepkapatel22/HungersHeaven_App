@@ -148,7 +148,7 @@ const SignUp = ({ closeSignUpModel }) => {
 
                 {/* Additional Info and Sign Up Button */}
                 <div className="login-info">
-                  <p>Did you already Sign Up? <Link to='/login'>Log In</Link></p>
+                  <p>Did you already Sign Up?</p><Link to='/login'>Log In</Link>
                 </div>
               {message && <p>{message}</p>}
               <div className="form-components">

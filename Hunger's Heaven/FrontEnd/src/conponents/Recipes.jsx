@@ -36,9 +36,7 @@ const Recipes = () => {
           {/* Additional recipe details can be added here */}
         </div>
       ))}
-      <div> 
-      <Link to='fullrecipes'><FaRegArrowAltCircleRight id="arrow"/></Link>
-      </div>
+      
       </div>
     </RecipeCard>
   );

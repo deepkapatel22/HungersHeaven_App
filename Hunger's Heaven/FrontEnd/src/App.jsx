@@ -16,6 +16,10 @@ import { UserProvider } from "./contexts/UserContext";
 import ShowRecipe from "./conponents/ShowRecipe";
 import UserProfile from "./conponents/UserProfile";
 import FullRecipes from "./conponents/FullRecipes";
+import EditProfile from "./conponents/EditProfile";
+import MyRecipes from "./conponents/MyRecipes";
+import Recipe2 from "./conponents/Recipe2";
+
 
 const App = () => {
 
@@ -36,8 +40,11 @@ const App = () => {
               <Route path="/afterlogin" element={<AfterLogin />}/>
               <Route path="/header2" element={<Header2/>}/>
               <Route path="/showrecipe/:recipeId" element={<ShowRecipe/>} />
-              <Route path="/userprofile/:userId" element={<UserProfile/>}/>
-              <Route path="/fullrecipes" elemement={<FullRecipes/>}/>
+              <Route path="/userprofile" element={<UserProfile/>}/>
+              <Route path="/fullrecipes" element={<FullRecipes/>}/>
+              <Route path="/editprofile" element={<EditProfile />} />
+              <Route path="/myrecipes" element={<MyRecipes />} />
+              <Route path="/recipe2" element={<Recipe2/>} />
             </Routes>
         </BrowserRouter>
         {/* <LastSection/> */}

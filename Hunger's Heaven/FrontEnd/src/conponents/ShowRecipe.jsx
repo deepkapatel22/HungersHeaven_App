@@ -106,29 +106,113 @@ const SubHeading = styled.h3`
 `;
 export const Paragraph = styled.p`
   font-size: 16px; 
-  color: #333; 
+  color: black; 
   line-height: 1.5; 
   margin-bottom: 15px; 
+  white-space: pre-wrap; /* Allows the text to wrap and preserves spaces and line breaks */
+  word-wrap: break-word; /* Breaks long words to prevent overflow */
+  overflow-wrap: break-word;
 `;
 
 const ShowRecipe = () => {
   const [recipe, setRecipe] = useState(null);
   const { recipeId } = useParams();
+  const [comments, setComments] = useState([]);
+const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
-
+  const [likedByUser, setLikedByUser] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const userEmail = localStorage.getItem("email");
   // Placeholder functions for handling interactions
-  const handleLike = () => {
-    console.log('Like functionality to be implemented');
-  };
 
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    console.log('Comment submit functionality to be implemented');
-  };
+    const handleLike = async () => {
+      try {
+        // Assuming you use axios and your API expects a POST request to mark a like
+        const response = await axios.post(`http://localhost:3000/api/recipes/${recipeId}/like`, {
+          // Include any required data according to your backend setup, e.g., user ID
+        });
+    
+        // If the backend responds with success, update the frontend accordingly
+        if (response.status === 200) {
+          setLikedByUser(true);
+          setLikesCount(prevCount => prevCount + 1);
+        } else {
+          // Handle any errors or unsuccessful responses
+          console.error('Failed to like the recipe');
+        }
+      } catch (error) {
+        console.error('Error liking the recipe:', error);
+      }
+    };
+    useEffect(() => {
+      const fetchRecipeAndComments = async () => {
+        try {
+          const recipeResponse = await axios.get(`http://localhost:3000/api/recipes/${recipeId}`);
+          setRecipe(recipeResponse.data);
+    
+          const commentsResponse = await axios.get(`http://localhost:3000/api/recipes/${recipeId}/comments`);
+          setComments(commentsResponse.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+    
+      fetchRecipeAndComments();
+    }, [recipeId]);
+    
 
+    const handleCommentSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const userEmail = localStorage.getItem("email"); // Ensure you have userEmail stored or use a different method to retrieve it
+        const response = await axios.post(`http://localhost:3000/api/recipes/${recipeId}/comments`, {
+          text: commentText,
+          userEmail,
+        });
+    
+        setComments([...comments, response.data]); // Add the new comment to the local state
+        setCommentText(''); // Reset the comment input field
+      } catch (error) {
+        console.error('Failed to post comment:', error);
+      }
+    };
+    
+
+  // const handleShare = () => {
+  //   // Copy the current URL to the clipboard
+  //   navigator.clipboard.writeText(window.location.href)
+  //     .then(() => {
+  //       alert("URL copied to clipboard!");
+  //     })
+  //     .catch(err => {
+  //       console.error("Could not copy URL: ", err);
+  //     });
+  // };
   const handleShare = () => {
-    console.log('Share functionality to be implemented');
+    // Check if the Web Share API is available
+    if (navigator.share) {
+      navigator.share({
+        title: recipe.recipeName,
+        text: `Check out this delicious recipe: ${recipe.recipeName}`,
+        url: window.location.href,
+      })
+      .then(() => console.log('Share was successful.'))
+      .catch((error) => console.error('Sharing failed', error));
+    } else {
+      // Fallback to copying the URL if Web Share API is not supported
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => {
+          alert("URL copied to clipboard!");
+        })
+        .catch(err => {
+          console.error("Could not copy URL: ", err);
+        });
+    }
   };
+  
+  
+  
+  
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -176,9 +260,12 @@ const ShowRecipe = () => {
         {/* ))}*/}
         </div>
         <InteractionBar>
-        <InteractionButton onClick={handleLike}>
+        {/* <InteractionButton onClick={handleLike}>
           👍 Like
-        </InteractionButton>
+        </InteractionButton> */}
+        <InteractionButton onClick={handleLike}>
+  {likedByUser ? '❤️ Liked' : '👍 Like'} {likesCount}
+</InteractionButton>
         <InteractionButton onClick={() => setShowComments(!showComments)}>
           💬 Comment
         </InteractionButton>
@@ -189,11 +276,18 @@ const ShowRecipe = () => {
 
       {showComments && (
         <CommentForm onSubmit={handleCommentSubmit}>
-          <CommentInput type="text" placeholder="Add a comment..." />
+          <CommentInput type="text" placeholder="Add a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)}/>
           <SubmitButton type="submit">Post</SubmitButton>
         </CommentForm>
         // Plus, render existing comments here
       )}
+      {comments.map((comment, index) => (
+  <div key={index} style={{ marginTop: '10px' }}>
+    <strong>{comment.userEmail}: </strong>{comment.text}
+  </div>
+))}
+
+      <p>Uploaded By: {userEmail}</p>
     </ShowRecipeCSS>
   );
 };

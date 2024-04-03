@@ -3,6 +3,8 @@ const router = express.Router();
 const Recipe = require('../models/Recipe'); // Adjust the path as per your structure
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const Like = require('../models/Like'); 
+const Comment = require('../models/Comment');
 
 
 router.post('/', async (req, res) => {
@@ -68,19 +70,112 @@ router.get('/:recipeId', async (req, res) => {
 
 router.get('/userrecipe/:created', async (req, res) => {
   try {
-    const useremail = await Recipe.findOne({ created: req.params.created });
+    const useremail = await Recipe.find({ created: req.params.created });
     console.log(useremail);
     if (!useremail) {
       return res.status(404).json({ message: 'User not found' });
     }
     
-    res.json([useremail]);
+    res.json(useremail);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
 });
 
+router.delete('/delete/:created', async (req, res) => {
+  try {
+    const recipe = await Recipe.findOneAndDelete({ created: req.params.created });
+    if (!recipe) {
+      return res.status(404).json({ message: 'Recipe not found' });
+    }
+    res.json({ message: 'Recipe deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting recipe:', error);
+    res.status(500).json({ message: 'Error deleting recipe' });
+  }
+});
 
+router.put('/update/:recipeId', async (req, res) => {
+  
+  try {
+    const updatedRecipe = await Recipe.findOneAndUpdate({ recipeId: req.params.recipeId }, req.body, { new: true });
+    // const updatedRecipe = await Recipe.findOneAndUpdate({ created: req.params.created });
+    if (!updatedRecipe) {
+      return res.status(404).send('Recipe not found');
+    }
+    res.json(updatedRecipe);
+  } catch (error) {
+    console.error('Error updating recipe:', error);
+    res.status(500).json({ message: 'Error updating recipe' });
+  }
+});
+router.post('/:recipeId/like', async (req, res) => {
+  const { recipeId } = req.params;
+  const userId = req.body.userId; // Assuming you have user information in req.user from your authentication middleware
 
+  try {
+    // Check if the like already exists
+    const existingLike = await Like.findOne({ recipeId, userId });
+
+    if (existingLike) {
+      // If like exists, remove it
+      await Like.deleteOne({ userId: existingLike.userId });
+      res.status(200).json({ message: 'Like removed' });
+    } else {
+      // If like does not exist, add it
+      const newLike = new Like({ recipeId, userId });
+      await newLike.save();
+      res.status(200).json({ message: 'Like added' });
+    }
+  } catch (error) {
+    console.error('Error toggling like:', error);
+    res.status(500).json({ message: 'Error toggling like', error: error.message });
+  }
+});
+
+router.post('/:recipeId/comments', async (req, res) => {
+  try {
+    const { recipeId } = req.params;
+    const { text, userEmail } = req.body; // Include more fields as needed
+
+    const newComment = new Comment({ recipeId, text, userEmail });
+    await newComment.save();
+
+    res.status(201).send(newComment);
+  } catch (error) {
+    res.status(500).send({ message: 'Failed to post comment', error: error.message });
+  }
+});
+
+router.get('/:recipeId/comments', async (req, res) => {
+  try {
+    const { recipeId } = req.params;
+
+    const comments = await Comment.find({ recipeId }).sort({ createdAt: -1 });
+    res.status(200).send(comments);
+  } catch (error) {
+    res.status(500).send({ message: 'Failed to fetch comments', error: error.message });
+  }
+});
+
+router.post('/comments/:commentId/replies', async (req, res) => {
+  const { commentId } = req.params;
+  const { text, userId } = req.body; // Include authentication to get userId
+
+  try {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).send({ message: 'Comment not found' });
+    }
+
+    // Add the reply to the comment's replies array
+    comment.replies.push({ text, userId });
+    await comment.save();
+
+    res.status(201).json(comment);
+  } catch (error) {
+    res.status(500).send({ message: 'Failed to add reply', error: error.message });
+  }
+});
 
 module.exports = router;

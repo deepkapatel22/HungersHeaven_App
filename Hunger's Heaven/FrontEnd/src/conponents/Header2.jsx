@@ -1,57 +1,59 @@
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { useState} from "react";
+import { useState, useContext} from "react";
 import { useNavigate } from 'react-router-dom';
 import { useUser } from "../contexts/UserContext";
 
 const Header2 = ({userId}) => {
+    const userEmail  = localStorage.getItem("email");
     const navigate = useNavigate();
-    // const { user } = useContext(UserContext); // Access user data from context
-    // const userId = user?.userId ; // Access userId from user data
+    const { user, logoutUser } = useUser(); // Access user data and logoutUser function from context
     const [isOpen, setIsOpen] = useState(false);
     const toggleDropdown = () => setIsOpen(!isOpen);
+
     const handleLogout = () => {
+        navigate('/'); // Optionally navigate to homepage or login page
+    };
+
+    // Use user's email if available, otherwise display "My Account"
     
-        navigate('/');
-      };
-  return (
-    <>
-        <HeaderMain>
-            <div className="mainHeader">
-                <div className="logo">
-                    <img src="/images/HH_logo.png" alt="Hunger's Heaven" />
-                    <h1>HUNGER'S HEAVEN</h1>
+
+    return (
+        <>
+            <HeaderMain>
+                <div className="mainHeader">
+                    <div className="logo">
+                        <img src="/images/HH_logo.png" alt="Hunger's Heaven" />
+                        <h1>HUNGER'S HEAVEN</h1>
+                    </div>
+                        
+                    <ListStyle>
+                        <div className="listElements">
+                            <ul>
+                                <li><Link style={{textDecoration: "none", color: "black"}} to="/afterlogin">HOME</Link></li>
+                                <li><Link style={{textDecoration: "none", color: "black"}} to="/recipes">RECIPES</Link></li>
+                                <li><Link style={{textDecoration: "none", color: "black"}} to="/write">WRITE</Link></li>
+                                <li><Link style={{textDecoration: "none", color: "black"}} to="/contact">CONTACT US</Link></li>
+                                <li><Link style={{textDecoration: "none", color: "black"}} to="/about">ABOUT US</Link></li>
+                            </ul>
+                        </div>   
+                    </ListStyle>
+                    <DropdownContainer>
+                        <DropdownButton onClick={toggleDropdown}>
+                            {userEmail}
+                        </DropdownButton>
+                        {isOpen && (
+                            <DropdownContent>
+                                <DropdownItem><Link to={`/userprofile`}>Profile</Link></DropdownItem>
+                                <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
+                            </DropdownContent>
+                        )}
+                    </DropdownContainer>
                 </div>
-                    
-                <ListStyle>
-                    <div className="listElements">
-                        <ul>
-                            <li><Link style={{textDecoration: "none", color: "black"}} to="/afterlogin">HOME</Link></li>
-                            <li><Link style={{textDecoration: "none", color: "black"}} to="/recipes">RECIPES</Link></li>
-                            <li><Link style={{textDecoration: "none", color: "black"}} to="/write">WRITE</Link></li>
-                            <li><Link style={{textDecoration: "none", color: "black"}} to="/contact">CONTACT US</Link></li>
-                            <li><Link style={{textDecoration: "none", color: "black"}} to="/about">ABOUT US</Link></li>
-                        </ul>
-                    </div>   
-                </ListStyle>
-                <DropdownContainer>
-
-                    <DropdownButton onClick={toggleDropdown}>
-                     My Account
-                    </DropdownButton>
-                {isOpen && (
-                    <DropdownContent>
-                        <DropdownItem><Link to={`/userprofile/${userId}`}>Profile</Link></DropdownItem>
-                        <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
-                    </DropdownContent>
-                )}
-            </DropdownContainer>
-            </div>
-        </HeaderMain>
-    </>
-  )
-}
-
+            </HeaderMain>
+        </>
+    );
+};
 export default Header2;
 
 const HeaderMain = styled.div`
@@ -61,7 +63,7 @@ const HeaderMain = styled.div`
     left:0;
     padding: 0px 10px;
     background-color: #f0f0f0;
-    max-width: 1200px;
+    max-width: 100%;
     .logo img{
         height: 50px;
         width: 50px;

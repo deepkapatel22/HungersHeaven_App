@@ -43,7 +43,7 @@ const HeaderMain = styled.div`
     left:0;
     padding: 0px 10px;
     background-color: #f0f0f0;
-    max-width: 1200px;
+    max-width: 100%;
     .logo img{
         height: 50px;
         width: 50px;

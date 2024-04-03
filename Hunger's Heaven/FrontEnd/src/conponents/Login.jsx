@@ -5,11 +5,11 @@ import validation from "./LoginValidation";
 import { Link } from "react-router-dom";
 import  axios  from "axios";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../contexts/UserContext";
+
 
 
 const Login = ({closeLogInModel}) => {
-  const { loginUser } = useUser(); // Use loginUser function from the context
+
   const navigate = useNavigate();
   const [values, setValues] = useState({
     email: "",
@@ -18,7 +18,6 @@ const Login = ({closeLogInModel}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
-
   const handleInput = (event) => {
     setValues((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   };
@@ -30,13 +29,14 @@ const Login = ({closeLogInModel}) => {
 
       setIsSubmitting(true);
       axios
-        .post("http://localhost:3000/api/user/login", {
+        .post('http://localhost:3000/api/user/login',{
           email: values.email,
           password: values.password,
         })
         .then((response) => {
           alert("Login successful! Please check your email to verify your account");
-          loginUser(response.data); // Use loginUser to update context
+          console.log(response.data);
+          localStorage.setItem("email" , values.email)
           navigate("/afterlogin");
         })
         .catch((error) => {
@@ -75,7 +75,7 @@ const Login = ({closeLogInModel}) => {
                 {errors.password && <span>{errors.password}</span>}
               </div>
               <div className="login-info">
-                <p>Don't have account? <Link to="/signup">Sign Up</Link></p>
+                <p>Don't have account?</p> <Link to="/signup">Sign Up</Link>
               </div>
               <div className="form-components">
                 <button type="submit">Log In</button>

@@ -80,19 +80,32 @@ const ImagePreview = styled.img`
   border-radius: 4px;
 `;
 
-const AddRecipeForm = () => {
+const AddRecipeForm = ({editData}) => {
+  
+  // const [formData, setFormData] = useState({
+  //   recipeName: '',
+  //   persons: '',
+  //   ingredients: [{ name: '', amount: '' }],
+  //   method: '',
+  //   category: '',
+  //   spiceLevel: '',
+  //   type: '',
+  //   cuisine: '',
+  //   images :'',
+  // });
 
   const [formData, setFormData] = useState({
-    recipeName: '',
-    persons: '',
-    ingredients: [{ name: '', amount: '' }],
-    method: '',
-    category: '',
-    spiceLevel: '',
-    type: '',
-    cuisine: '',
-    images :'',
+    recipeName: editData ? editData.recipeName : '',
+    persons: editData ? editData.persons : '',
+    ingredients: editData ? editData.ingredients : [{ name: '', amount: '' }],
+    method: editData ? editData.method : '',
+    category: editData ? editData.category : '',
+    spiceLevel: editData ? editData.spiceLevel : '',
+    type: editData ? editData.type : '',
+    cuisine: editData ? editData.cuisine : '',
+    images: editData ? editData.images : '',
   });
+  const [recipe,setRecipe] = useState();
   const [files, setFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState('');
   const handleChange = (e) => {
@@ -113,6 +126,8 @@ const AddRecipeForm = () => {
         ...formData,
         ingredients: newIngredients,
     });
+
+  
 };
 
   const addIngredient = () => {
@@ -144,11 +159,61 @@ const AddRecipeForm = () => {
   }, [files]);
 
 
+  const createdBy = localStorage.getItem("email");
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   console.log(formData);
+  //   let responseData;
+  //   let recipe = formData;
+  //   let dataElement = new FormData();
+  //   for (let file of files) {
+  //     dataElement.append('images', file);
+  //   }
+  //   dataElement.append('recipeName', formData.recipeName);
+  //   dataElement.append('persons', formData.persons);
+  //   formData.ingredients.forEach((ingredient, index) => {
+  //     dataElement.append(`ingredients[${index}][name]`, ingredient.name);
+  //     dataElement.append(`ingredients[${index}][amount]`, ingredient.amount);
+  //   });
+  //   dataElement.append('method', formData.method);
+  //   dataElement.append('category', formData.category);
+  //   dataElement.append('spiceLevel', formData.spiceLevel);
+  //   dataElement.append('persons', formData.persons);
+  //   dataElement.append('type', formData.type);
+  //   dataElement.append('cuisine', formData.cuisine);
+  //   dataElement.append('email', createdBy);
+  //   await fetch('http://localhost:3000/upload',{
+  //     method:'POST',
+  //     body:dataElement,
+  //   })
+  //   .then((resp)=> resp.json())
+    
+  //   .then((data)=> {
+  //     responseData=data
+  //   })
+  //   .catch((error) => {
+  //     console.error('Error uploading files:', error);
+  //   });
+
+  //   if(responseData && responseData.success){
+  //     recipe = {...formData,created : createdBy};
+  //     recipe.images = responseData.image_url;
+  //     console.log(recipe);
+  //     await fetch('http://localhost:3000/api/recipes',{
+  //       method:'POST',
+  //       headers:{
+  //           'content-Type':'application/json',
+  //       },
+  //       body:JSON.stringify(recipe),
+  //     }).then((resp)=>resp.json()).then((data)=>{
+  //       data.success?alert("Product added"):alert("Failed");
+  //     })
+  //   }
+  // }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
     let responseData;
-    let recipe = formData;
     let dataElement = new FormData();
     for (let file of files) {
       dataElement.append('images', file);
@@ -162,40 +227,61 @@ const AddRecipeForm = () => {
     dataElement.append('method', formData.method);
     dataElement.append('category', formData.category);
     dataElement.append('spiceLevel', formData.spiceLevel);
-    dataElement.append('persons', formData.persons);
     dataElement.append('type', formData.type);
     dataElement.append('cuisine', formData.cuisine);
-    await fetch('http://localhost:3000/upload',{
-      method:'POST',
-      body:dataElement,
-    })
-    .then((resp)=> resp.json())
-    
-    .then((data)=> {
-      responseData=data
-    })
-    .catch((error) => {
-      console.error('Error uploading files:', error);
-    });
+    dataElement.append('created', createdBy); // Ensure 'createdBy' is defined in your component's scope
+  
+    if (editData) {
+      // Update existing recipe
+      
 
-    if(responseData && responseData.success){
-      recipe = {...formData};
-      recipe.images = responseData.image_url;
-      console.log(recipe);
-      await fetch('http://localhost:3000/api/recipes',{
-        method:'POST',
-        headers:{
-            'content-Type':'application/json',
-        },
-        body:JSON.stringify(recipe),
-      }).then((resp)=>resp.json()).then((data)=>{
-        data.success?alert("Product added"):alert("Failed");
+      axios.put(`http://localhost:3000/api/recipes/update/${editData.recipeId}`, {
+        recipeName: formData.recipeName,
+        persons: formData.persons,
+        ingredients: formData.ingredients,
+        method: formData.method,
+        category: formData.category,
+        spiceLevel: formData.spiceLevel,
+        type: formData.type,
+        cuisine: formData.cuisine,
+        images: formData.images
       })
+    } else {
+      // Create new recipe
+      try {
+        const uploadResponse = await fetch('http://localhost:3000/upload', {
+          method: 'POST',
+          body: dataElement,
+        });
+        const uploadData = await uploadResponse.json();
+        if (uploadData.success) {
+          // Assuming the backend returns the URL(s) of the uploaded image(s) in `uploadData.image_url`
+          const newRecipeData = { ...formData, images: uploadData.image_url, created: createdBy };
+          const createResponse = await fetch('http://localhost:3000/api/recipes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newRecipeData),
+          });
+          // const createData = await createResponse.json();
+
+          if (createResponse.ok) {
+            alert('Recipe added successfully!');
+            // Handle post-creation actions
+          } else {
+            alert('Failed to add new recipe.');
+          }   
+        } else {
+          alert('Failed to upload image.');
+        }
+      } catch (error) {
+        console.error('Error creating new recipe:', error);
+      }
     }
-  }
+  };
   
-  
-    
+
  
   return (
     <FormContainer>
