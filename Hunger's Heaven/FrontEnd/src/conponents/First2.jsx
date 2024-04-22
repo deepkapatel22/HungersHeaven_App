@@ -1,10 +1,24 @@
 
 import styled from "styled-components";
 import { FaSearch } from "react-icons/fa";
-
+import { useRecipes } from '../contexts/RecipeContext';
+import { useEffect, useState } from "react";
+import axios from 'axios';
 
 const First2 = () => {
-    
+    const { name, setName, resFilter ,setResFilter} = useRecipes();
+    const handleFilter = (event) => {
+        setName(event.target.value);  
+    }
+    useEffect(()=>{
+        axios.post('http://localhost:3000/api/recipes/search',{
+            query: name
+        }).then(response =>{
+            setResFilter(response.data); 
+             
+    })
+    },[name])
+    console.log(resFilter);
     return (
         <>
             <TopPart>
@@ -13,7 +27,7 @@ const First2 = () => {
                 </div>
                 <div className="twoBtn"> 
                 <div className="searchField">
-                    <input type="text" name="searchInput" placeholder="Search"/>
+                    <input type="text" name="searchInput" placeholder="Search" value={name} onChange={handleFilter}/>
                     <FaSearch id="searchIcon"/>
                     </div>
                 </div>

@@ -22,7 +22,7 @@ const LastSection = () => {
             </div>
             <div className="end">
                 <p><FaRegCopyright/> By Hunger's Heaven</p>
-                <button onClick={toggleChatbot}>Help</button>
+                <button className="chatbot" onClick={toggleChatbot}>chat with us !!!</button>
             </div>
         </div>
         {showChatbot && <ChatBox onClose={() => setShowChatbot(false)} />}
@@ -32,7 +32,7 @@ const LastSection = () => {
 export default LastSection;
 
 const LastCSS = styled.div`
-    background-color: black;
+    background-color: grey;
     height: 40vh;
     width:100%;
     color: white;
@@ -55,14 +55,18 @@ const LastCSS = styled.div`
         margin: auto 100px;
     }
     .end button{
+        position: fixed;
+        bottom:20px;
+        right: 20px;
         padding: 10px 30px;
         background: transparent;
-        border: 1px solid white;
+        border: 1px solid black;
         border-radius: 25px;
         font-size: 17px;
         font-weight: 600;
         cursor: pointer;
-        color: white;
+        color: black;
+        
     }
     .end button:hover{
         background: white;

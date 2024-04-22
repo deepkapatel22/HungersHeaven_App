@@ -1,8 +1,28 @@
 import styled from "styled-components";
 import { FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from 'axios';
+import Recipe2 from "./Recipe2";
+import Recipes from "./Recipes";
+import { useRecipes } from '../contexts/RecipeContext';
 
 const Header = () => {
+    // const [name, setName] = useState('');
+    // const [resFilter, setResFilter] = useState([]);
+    const { name, setName, resFilter ,setResFilter} = useRecipes();
+    const handleFilter = (event) => {
+        setName(event.target.value);  
+    }
+    useEffect(()=>{
+        axios.post('http://localhost:3000/api/recipes/search',{
+            query: name
+        }).then(response =>{
+            setResFilter(response.data); 
+             
+    })
+    },[name])
+    console.log(resFilter);
   return (
     <>
         <HeaderMain>
@@ -23,7 +43,7 @@ const Header = () => {
                         </ul>
                     </div>
                     <div className="searchField">
-                        <input type="text" name="searchInput" placeholder="Search"/>
+                        <input type="text" name="searchInput" placeholder="Search" value={name} onChange={handleFilter}/>
                         <FaSearch id="searchIcon"/>
                     </div>
                     

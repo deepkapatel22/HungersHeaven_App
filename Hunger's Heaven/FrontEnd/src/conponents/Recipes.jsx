@@ -3,41 +3,59 @@ import axios from 'axios';
 import styled from 'styled-components';
 import {Link} from 'react-router-dom';
 import { FaRegArrowAltCircleRight } from "react-icons/fa";
+import { useRecipes } from '../contexts/RecipeContext';
 
 const Recipes = () => {
-  const [recipes, setRecipes] = useState([]);
+  const { resFilter, name } = useRecipes(); // Using context to get filtered recipes and the search term
+  const [allRecipes, setAllRecipes] = useState([]); // State to hold all recipes
 
-
+  // useEffect(() => {
+  //     axios.get('http://localhost:3000/api/recipes')
+  //         .then(response => {
+  //             setAllRecipes(response.data);
+  //         })
+  //         .catch(error => console.error('Error fetching all recipes:', error));
+  // }, []);
   useEffect(() => {
-    // Fetch recipes when component mounts
-    const fetchRecipes = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/recipes');
-        setRecipes(response.data);
-      } catch (error) {
-        console.error('Error fetching recipes:', error);
-      }
-    };
+    axios.get('http://localhost:3000/api/recipes')
+        .then(response => {
+            const sortedRecipes = response.data.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+            setAllRecipes(sortedRecipes.slice(0, 4)); // Only take the first four
+        })
+        .catch(error => console.error('Error fetching all recipes:', error));
+}, []);
 
-    fetchRecipes();
-  }, []); // Empty dependency array means this effect runs once on mount
-
+  // Determine what to display based on the search results and whether a search was made
+  let content;
+  if (resFilter.length > 0 || name) {
+      content = resFilter.length > 0 ? resFilter.map((recipe) => (
+          <div key={recipe.recipeId} className="recipe-card">
+              <img src={recipe.images} alt={recipe.recipeName} />
+              <Link to={`/showrecipe/${recipe.recipeId}`} className="recipe-button">
+                  <h3>{recipe.recipeName}</h3>
+              </Link>
+              <p>{recipe.cuisine}</p>
+          </div>
+      )) : <p>No recipes found.</p>; // Show this message if search yielded no results
+  } else {
+      // If no search has been made, display all recipes
+      content = allRecipes.map((recipe) => (
+          <div key={recipe.recipeId} className="recipe-card">
+              <img src={recipe.images} alt={recipe.recipeName} />
+              <Link to={`/showrecipe/${recipe.recipeId}`} className="recipe-button">
+                  <h3>{recipe.recipeName}</h3>
+              </Link>
+              <p>{recipe.cuisine}</p>
+          </div>
+      ));
+  }
   return (
     <RecipeCard>
       <RecipeHeading>Recipes</RecipeHeading>
-      <div className="recipes-container">
-      {recipes.map((recipe) => (
-        <div key={recipe.recipeId} className="recipe-card">
-          <img src={recipe.images} alt={recipe.recipeName} />
-          <Link to={`/showrecipe/${recipe.recipeId}`} className="recipe-button">
-            <h3>{recipe.recipeName}</h3>
-          </Link>
-          <p>{recipe.cuisine}</p>
-          {/* Additional recipe details can be added here */}
-        </div>
-      ))}
-      
-      </div>
+            <div className="recipes-container">
+                {content}
+            </div>
+            <Link to="/all-recipes" className="view-more">View More</Link>      
     </RecipeCard>
   );
 };
@@ -105,6 +123,21 @@ const RecipeCard = styled.div`
 }
 #arrow{
   font-size:50px;
+}
+.view-more {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  background-color: #000;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #0056b3;
+  }
 }
 `;
 

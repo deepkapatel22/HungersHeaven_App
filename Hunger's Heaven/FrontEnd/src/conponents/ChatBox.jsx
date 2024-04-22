@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useState } from 'react';
 import getAutoResponse from '../utils/ChatUtils';
 import { AiOutlineSend } from "react-icons/ai";
+import axios from 'axios';
 
 const ChatBox = ({ onClose }) => {
     const [messages, setMessages] = useState([]);
@@ -17,20 +18,44 @@ const ChatBox = ({ onClose }) => {
     //       // Here you might want to add automated responses or integration with a backend
     //     }
     // }
-    const handleSend = (e) => {
-        e.preventDefault();
-        const trimmedInput = inputValue.trim();
-        if (trimmedInput) {
-          setMessages([...messages, { text: trimmedInput, sender: "user" }]);
-          setInputValue("");
+    // const handleSend = (e) => {
+    //     e.preventDefault();
+    //     const trimmedInput = inputValue.trim();
+    //     if (trimmedInput) {
+    //       setMessages([...messages, { text: trimmedInput, sender: "user" }]);
+    //       setInputValue("");
       
-          // Simulate a delay before showing the automated response
-          setTimeout(() => {
-            const autoResponse = getAutoResponse(trimmedInput);
-            setMessages((prevMessages) => [...prevMessages, { text: autoResponse, sender: "bot" }]);
-          }, 500); // Adjust delay as needed
-        }
-      };
+    //       // Simulate a delay before showing the automated response
+    //       setTimeout(() => {
+    //         const autoResponse = getAutoResponse(trimmedInput);
+    //         setMessages((prevMessages) => [...prevMessages, { text: autoResponse, sender: "bot" }]);
+    //       }, 500); // Adjust delay as needed
+    //     }
+    //   };
+
+    const handleSend = async (e) => {
+      e.preventDefault();
+      const trimmedInput = inputValue.trim();
+      if (trimmedInput) {
+          setMessages(messages => [...messages, { text: trimmedInput, sender: "user" }]);
+          setInputValue("");
+
+          try {
+              const response = await axios.post('http://localhost:3000/api/recipes/chat', { message: trimmedInput });
+              setMessages(messages => [...messages, { text: response.data.message, sender: "bot" }]); // Corrected to access response.data.message
+          } catch (error) {
+              console.error("Error in getting response from backend:", error);
+              setMessages(messages => [...messages, { text: "Failed to fetch response.", sender: "bot" }]);
+          }
+
+          // Auto-scroll to latest message
+          const chatBody = document.querySelector('#chatBody');
+          if (chatBody) {
+              chatBody.scrollTop = chatBody.scrollHeight;
+          }
+      }
+  };
+
   return (
     <ChatContainer>
       <ChatHeader>

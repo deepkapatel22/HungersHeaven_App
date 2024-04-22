@@ -5,7 +5,12 @@ const User = require('../models/User');
 const mongoose = require('mongoose');
 const Like = require('../models/Like'); 
 const Comment = require('../models/Comment');
-
+const axios = require('axios');
+const OpenAIApi = require('openai');
+const dotenv = require("dotenv");
+const Configuration = require('openai')
+const openai = require('openai');
+dotenv.config();
 
 router.post('/', async (req, res) => {
   console.log('POST request to /api/recipes received');
@@ -109,7 +114,7 @@ router.put('/update/:recipeId', async (req, res) => {
     res.status(500).json({ message: 'Error updating recipe' });
   }
 });
-router.post('/:recipeId/like', async (req, res) => {
+router.post('/:recipeId/likes', async (req, res) => {
   const { recipeId } = req.params;
   const userId = req.body.userId; // Assuming you have user information in req.user from your authentication middleware
 
@@ -146,6 +151,21 @@ router.post('/:recipeId/comments', async (req, res) => {
     res.status(500).send({ message: 'Failed to post comment', error: error.message });
   }
 });
+router.get('/:recipeId/likes', async (req, res) => {
+  try {
+    const { recipeId } = req.params;
+    const userEmail = req.query.userEmail; // Assuming you pass userEmail as a query parameter
+    
+    const likesCount = await Like.countDocuments({ recipeId });
+    const userLike = await Like.findOne({ recipeId, userEmail });
+
+    res.json({ likesCount, likedByUser: !!userLike });
+  } catch (error) {
+    console.error('Error fetching likes:', error);
+    res.status(500).json({ message: 'Error fetching likes', error: error.message });
+  }
+});
+
 
 router.get('/:recipeId/comments', async (req, res) => {
   try {
@@ -177,5 +197,54 @@ router.post('/comments/:commentId/replies', async (req, res) => {
     res.status(500).send({ message: 'Failed to add reply', error: error.message });
   }
 });
+
+// In your Node.js routes file
+
+router.post('/search', async (req, res) => {
+  const { query } = req.body;
+
+  try {
+    // Perform a regex search across multiple fields
+    const recipes = await Recipe.find({
+      $or: [
+        { recipeName: { $regex: query, $options: 'i' } },
+        { cuisine: { $regex: query, $options: 'i' } },
+        { category : { $regex: query, $options: 'i' } }, 
+        { spiceLevel : { $regex: query, $options: 'i' } },
+        { type : { $regex: query, $options: 'i' } },
+        { 'ingredients.name': { $regex: query, $options: 'i' } }
+      ]
+  });
+
+    res.json(recipes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error searching recipes.");
+  }
+});
+router.post('/chat', async (req, res) => {
+  const { message } = req.body;
+  try {
+      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+          model: "gpt-3.5-turbo",  
+          messages: [{ role: "user", content: message }]
+      }, {
+          headers: {
+              'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+              'Content-Type': 'application/json'
+          }
+      });
+      const chatResponse = response.data.choices[0].message.content;
+      res.json({ message: chatResponse });
+      // res.json(response.data.choices[0].message.content);
+      // console.log(response.data.choices[0].message.content);
+  } catch (error) {
+      console.error('Error calling OpenAI API:', error.response.data);
+      res.status(500).send('Failed to fetch response from OpenAI');
+  }
+});
+
+
+
 
 module.exports = router;

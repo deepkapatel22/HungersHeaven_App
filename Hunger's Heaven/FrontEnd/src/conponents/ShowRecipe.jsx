@@ -123,27 +123,45 @@ const [commentText, setCommentText] = useState('');
   const [likedByUser, setLikedByUser] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const userEmail = localStorage.getItem("email");
-  // Placeholder functions for handling interactions
-
-    const handleLike = async () => {
+ 
+  useEffect(() => {
+    const fetchRecipeDetails = async () => {
+      const userEmail = localStorage.getItem("email");
       try {
-        // Assuming you use axios and your API expects a POST request to mark a like
-        const response = await axios.post(`http://localhost:3000/api/recipes/${recipeId}/like`, {
-          // Include any required data according to your backend setup, e.g., user ID
+        const recipeResponse = await axios.get(`http://localhost:3000/api/recipes/${recipeId}`);
+        setRecipe(recipeResponse.data);
+        
+        // Fetch likes information
+        const likesResponse = await axios.get(`http://localhost:3000/api/recipes/${recipeId}/likes`, {
+          params: { userEmail }
         });
-    
-        // If the backend responds with success, update the frontend accordingly
-        if (response.status === 200) {
-          setLikedByUser(true);
-          setLikesCount(prevCount => prevCount + 1);
-        } else {
-          // Handle any errors or unsuccessful responses
-          console.error('Failed to like the recipe');
-        }
+        setLikesCount(likesResponse.data.likesCount);
+        setLikedByUser(likesResponse.data.likedByUser);
       } catch (error) {
-        console.error('Error liking the recipe:', error);
+        console.error('Error fetching recipe details:', error);
       }
     };
+  
+    fetchRecipeDetails();
+  }, [recipeId]);
+  
+  const handleLike = async () => {
+    const userEmail = localStorage.getItem("email");
+    try {
+      const response = await axios.post(`http://localhost:3000/api/recipes/${recipeId}/likes`, {
+        userEmail,
+      });
+      
+      // Update UI based on response
+      setLikesCount(response.data.likesCount);
+      setLikedByUser(response.data.likedByUser);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Optionally revert the UI changes here if optimistic update was done
+    }
+  };
+  
+ 
     useEffect(() => {
       const fetchRecipeAndComments = async () => {
         try {

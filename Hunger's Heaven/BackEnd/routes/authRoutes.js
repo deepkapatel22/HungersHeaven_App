@@ -1,6 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Twilio = require('twilio');
+const twilioClient = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 const router = express.Router();
 
@@ -103,5 +105,29 @@ router.get('/:email', async (req, res) => {
     res.status(500).send('Error fetching recipe');
   }
 });
+router.post('/send-otp', (req, res) => {
+  const { phoneNumber } = req.body;
+  if (!phoneNumber) {
+      return res.status(400).json({ error: 'Phone number is required' });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000); // Generates a 6-digit OTP
+  const message = `Your OTP is: ${otp}`;
+
+  twilioClient.messages.create({
+      to: phoneNumber,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      body: message
+  })
+  .then(message => {
+      console.log('SMS sent successfully:', message.sid);
+      res.json({ success: true, message: 'OTP sent successfully' });
+  })
+  .catch(error => {
+      console.error('Error sending OTP:', error);
+      res.status(500).json({ error: 'Failed to send OTP' });
+  });
+});
+
 
 module.exports = router;

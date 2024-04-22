@@ -19,6 +19,7 @@ import FullRecipes from "./conponents/FullRecipes";
 import EditProfile from "./conponents/EditProfile";
 import MyRecipes from "./conponents/MyRecipes";
 import Recipe2 from "./conponents/Recipe2";
+import { RecipeProvider } from "./contexts/RecipeContext";
 
 
 const App = () => {
@@ -26,11 +27,12 @@ const App = () => {
   return (
     <div>
       <UserProvider>
+        <RecipeProvider>
         <BrowserRouter>
           <Header />
             <Routes>
               <Route path="/" element={<TopSection/>}/>
-              <Route path="/recipes" element={<Recipes/>}/>
+              <Route path="/recipes" element={<Recipes />}/>
               <Route path="/write" element={<Write/>}/>
               <Route path="/contact" element={<ContactSection/>}/>
               <Route path="/about" element={<AboutSection/>}/>
@@ -48,6 +50,7 @@ const App = () => {
             </Routes>
         </BrowserRouter>
         {/* <LastSection/> */}
+        </RecipeProvider>
       </UserProvider>
     </div>
   )
